@@ -6,7 +6,7 @@ import connectDatabase from './config/db';
 const app = express();
 
 // Connect database
-connectDatabase();
+  connectDatabase();
 
 // API endpoints
 app.get('/', (req, res) =>
