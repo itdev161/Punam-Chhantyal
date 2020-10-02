@@ -18,7 +18,7 @@
     "url": "https://github.com/itdev161/Punam-Chhantyal/issues"
   },
   "homepage": "https://github.com/itdev161/Punam-Chhantyal#readme",
-    "dependencies": {
+  "dependencies": {
     "bcryptjs": "^2.4.3",
     "config": "^3.2.2",
     "esm": "^3.2.25",
@@ -31,5 +31,3 @@
     "nodemon": "^1.19.2"
   }
 }
-
-
