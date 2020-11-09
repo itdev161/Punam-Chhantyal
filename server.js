@@ -6,6 +6,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import config from 'config';
 import User from './models/User';
+import auth from './middleware/auth';
+
 // Initialize express application
 const app = express();
 
@@ -69,21 +71,7 @@ if (!errors.isEmpty()) {
     await user.save();
 
     //Generate and return a JWT token
-    const payload = {
-      user: {
-        id: user.id
-      }
-    };
-
-    jwt.sign(
-      payload,
-      config.get('jwtSecret'),
-      { expiresIn: '10hr' },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token: token });
-      }
-    );
+    returnToken(user, res);
   } catch (error) {
     res.status(500).send('Server error');
            }
@@ -94,3 +82,62 @@ if (!errors.isEmpty()) {
 // Connection listner
 const port = 5000;
 app.listen(port, () => console.log (`Express server running on port ${port}`));
+
+/**
+ * @route POST api/login
+ * @desc login user
+ */
+app.post(
+  '/api/login',
+  [
+    check('email', 'Please enter a valid email').isEmail(),
+    check('password', 'A password is required').exists()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    } else {
+      const { email, password } = req.body;
+      try {
+        // Check if user exists
+        let user = await User.findOne({ email: email });
+        if (!user) {
+          return res
+          .status(400)
+          .json({ errors: [{ msg: 'Invalid email or password' }] });
+      }
+
+      //Check password
+      const match = await bcrypt.conpare(password, user.password);
+      if (!match) {
+        return res
+        .status(400)
+        .json({ errors: [{ msg: 'Invalid email or password '}] });
+      }
+
+      //Generate and return a JWT token
+      returnToken(user, res);
+    } catch (error) {
+      res.status(500).send('Server error');
+    }
+    }
+  }
+);
+const returnToken = (user, res) => {
+  const payload = {
+    user: {
+      id: user.id
+    }
+  };
+
+  jwt.sign(
+    payload,
+    config.get('jwtSecret'),
+    { expiresIn: '10hr' },
+(err, token) => {
+  if (err) throw err;
+  res.json({ token: token });
+    }
+  );
+};
