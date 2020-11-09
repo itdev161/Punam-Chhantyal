@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import config from 'config';
 import User from './models/User';
+import Post from './models/Post';
 import auth from './middleware/auth';
 
 // Initialize express application
@@ -75,13 +76,21 @@ if (!errors.isEmpty()) {
   } catch (error) {
     res.status(500).send('Server error');
            }
-       }
-    }
+      }
+  }
 );
-
-// Connection listner
-const port = 5000;
-app.listen(port, () => console.log (`Express server running on port ${port}`));
+/**
+ * @route GET api/auth
+ * @desc Authenticate user
+ */
+app.get('/api/auth', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).send('Unknown server error');
+  }
+}); 
 
 /**
  * @route POST api/login
@@ -141,3 +150,7 @@ const returnToken = (user, res) => {
     }
   );
 };
+
+// Connection listner
+const port = 5000;
+app.listen(port, () => console.log (`Express server running on port ${port}`));
